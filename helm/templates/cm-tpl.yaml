@@ -1,0 +1,12 @@
+{{- $files := .Files.Glob "tpls/*.tpl" }}
+{{- if $files }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tpls-cm
+data:
+{{- range $path, $fileContents := $files }}
+{{- $tplName := regexReplaceAll "(^.*/)(.*)\\.tpl$" $path "${2}" }}
+    {{ $tplName }}.tpl: {{ $.Files.Get $path | toJson }}
+{{- end }}
+{{- end }}
