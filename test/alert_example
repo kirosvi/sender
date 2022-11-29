@@ -1,0 +1,37 @@
+{
+    "alerts":[
+        {
+            "status":"resolved",
+            "labels":{
+                "alertname":"test alert",
+                "severity":"info",
+                "kubernetes_name": "prometheus exporter",
+                "kubernetes_namespace": "namespace",
+                "kubernetes_node": "node",
+                "additional_label": "label_123",
+                "test_label1": "test1"
+            },
+            "annotations":{
+                "description":"test description",
+                "summary":"Test alert"
+            },
+            "generatorURL":"http://prometheus.io"
+        },
+        {
+            "status":"firing",
+            "labels":{
+                "alertname":"test alert 2",
+                "severity":"error",
+                "kubernetes_name": "prometheus exporter",
+                "kubernetes_namespace": "namespace",
+                "kubernetes_node": "node",
+                "test_label2": "test2",
+                "custom_label": "custom_true"
+            },
+            "annotations":{
+                "description":"test description 2"
+            },
+            "generatorURL":"http://prometheus.io"
+        }
+    ]
+}

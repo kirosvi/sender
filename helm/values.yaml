@@ -1,0 +1,107 @@
+global:
+  resources:
+    _default:
+      limits:
+        cpu: 2
+        memory: 2Gi
+      requests:
+        cpu: 5m
+        memory: 10Mi
+
+helm-common:
+  apps:
+    app:
+      replicas:
+        prod: 2
+      podDisruptionBudget: 1
+      strategy_by_tier:
+        _default:
+          type: Recreate
+        prod:
+          type: RollingUpdate
+          rollingUpdate:
+            maxUnavailable: 1
+            maxSurge: 1
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 1
+      annotations:
+        checksum/patterns: '{{ toJson .Values.appconfig | sha256sum }}'
+      volumes:
+        - name: config
+          configMap:
+            name: config
+            items:
+              - key: config.yaml
+                path: config.yaml
+        - name: templates
+          configMap:
+            name: tpls-cm
+      antiAffinity: true
+      antiAffinitySoft: true
+      containers:
+      - name: app
+        image: kiros/tg-sender:latest
+        volumeMounts:
+          - name: config
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+          - name: templates
+            mountPath: /app/templates/
+        livenessProbe:
+          tcpSocket:
+            port: 80
+          failureThreshold: 3
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 80
+          failureThreshold: 3
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+
+  services:
+    app:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: 8080
+          protocol: TCP
+
+  test_ingress_paths: &test_ingress_paths
+    - path: /
+      service:
+        name: app
+        port: 80
+      pathType: Prefix
+
+  ingress:
+    test:
+      className:
+        _default: nginx-internal
+      rules:
+        - host:
+            _default: "{{ .Values.global.git_branch }}tg-sender.domain.io"
+            prod: "tg-sender.domain.io"
+          paths: *test_ingress_paths
+
+appconfig:
+  ppcore:
+    chatid: -1001635818539
+    token: "21412411241241212412412412"
+    template: ppcore.tpl
+  rundeck:
+    chatid: -1001635818539
+    token: "21412411241241212412412412"
+    template: rundeck.tpl
+  infra:
+    chatid: -1001635818539
+    token: "21412411241241212412412412"
+    template: default.tpl

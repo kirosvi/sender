@@ -1,0 +1,9 @@
+apiVersion: v1
+name: tg-sender
+version: 0.1.0
+appVersion: "0.1.0"
+description: tg-sender
+dependencies:
+  - name: helm-common
+    version: 0.2.12
+    repository: https://chartmuseum.infra.ppdev.ru
