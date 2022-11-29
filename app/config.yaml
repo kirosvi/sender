@@ -1,0 +1,12 @@
+ppcore:
+  chatid: -1001635818539
+  token: 21412411241241212412412412
+  template: ppcore.tpl
+rundeck:
+  chatid: -1001635818539
+  token: 21412411241241212412412412
+  template: rundeck.tpl
+infra:
+  chatid: -1001635818539
+  token: 21412411241241212412412412
+  template: default.tpl

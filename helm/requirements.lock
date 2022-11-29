@@ -1,0 +1,6 @@
+dependencies:
+- name: helm-common
+  repository: https://chartmuseum.infra.ppdev.ru
+  version: 0.2.12
+digest: sha256:8842a73edf80dec4dc3df9d2c6c67147e2b1ff3ec0222f2290d758a30ff5e3a9
+generated: "2022-11-29T11:32:16.956038589Z"
