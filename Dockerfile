@@ -22,6 +22,8 @@ RUN go build -o ./out/tg-sender .
 # Start fresh from a smaller image
 FROM alpine:3.17
 
+WORKDIR /app
+
 COPY --from=build_base /tmp/app/out/tg-sender /app/tg-sender
 
 # This container exposes port 8080 to the outside world
