@@ -1,3 +1,4 @@
+// Service to send messages by webhooks to telegram
 package main
 
 import (
@@ -22,16 +23,18 @@ var (
 	templatesPath string
 	port          string
 	address       string
-	http_message  string
-	http_response int
+	httpMessage   string
+	httpResponse  int
 )
 
+// ConfigParams is struct for params from config.yaml
 type ConfigParams struct {
-	ChatId   int64
-	Token    string
-	Template string
+	ChatID   int64  `yaml:"chatid"`
+	Token    string `yaml:"token"`
+	Template string `yaml: "template"`
 }
 
+// Message is struct for params for message that sent to telegram
 type Message struct {
 	ChatID int64  `json:"chat_id"`
 	Text   string `json:"text"`
@@ -63,18 +66,20 @@ func main() {
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
 
-	router.GET("/ping", GET_Handling)
-	router.POST("/alert/:chatname", POST_Handling)
+	router.GET("/ping", GETHandling)
+	router.POST("/alert/:chatname", POSTHandling)
 	router.Run(addressToBind)
 }
 
-func GET_Handling(c *gin.Context) {
+// GETHandling manage get requests, basicaly its healthcheck
+func GETHandling(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
 
-func POST_Handling(c *gin.Context) {
+// POSTHandling manage post requests
+func POSTHandling(c *gin.Context) {
 
 	chatname := c.Param("chatname")
 	action := c.Query("action")
@@ -84,7 +89,7 @@ func POST_Handling(c *gin.Context) {
 		log.Print(err)
 	}
 
-	status, responseMsg:= executeAlerting(chatname, action, rawData)
+	status, responseMsg := executeAlerting(chatname, action, rawData)
 
 	r := string(responseMsg)
 
@@ -98,15 +103,15 @@ func POST_Handling(c *gin.Context) {
 }
 
 func executeAlerting(chatname string, action string, rawData []byte) (int, string) {
-	parsedData := importJson(rawData)
+	parsedData := importJSON(rawData)
 
-	rendered_data := renderTemplate(chatname, parsedData)
+	renderedData := renderTemplate(chatname, parsedData)
 
 	msg := &Message{
-		ChatID: configData[chatname].ChatId,
-		Text:   rendered_data}
+		ChatID: configData[chatname].ChatID,
+		Text:   renderedData}
 
-	url := getUrl(configData[chatname].Token)
+	url := getURL(configData[chatname].Token)
 
 	status, responseMsg := SendMessage(url, msg, chatname, action)
 
@@ -141,14 +146,12 @@ func renderTemplate(chatname string, messageData map[string]interface{}) string 
 
 }
 
-func getUrl(token string) string {
+func getURL(token string) string {
 	return fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
 }
 
-func SendMessage(url string, message *Message, chatname string, action string) (int, string){
-
-	//log.Printf("Bot alert post: %s", chatname)
-	//log.Printf("data: %s", message)
+// SendMessage function to send message based on chat name and state of action parametr
+func SendMessage(url string, message *Message, chatname string, action string) (int, string) {
 
 	payload, err := json.Marshal(message)
 	if err != nil {
@@ -171,18 +174,16 @@ func SendMessage(url string, message *Message, chatname string, action string) (
 		if response.StatusCode != http.StatusOK {
 			log.Printf("failed to send successful request. Status was %q", response.Status)
 			return response.StatusCode, response.Status
-		} else {
-			responseMsg := string(body)
-			return response.StatusCode, responseMsg
 		}
-	} else {
-		return 200, string(payload)
-	}
+		responseMsg := string(body)
+		return response.StatusCode, responseMsg
 
+	}
+	return 200, string(payload)
 
 }
 
-func importJson(data []byte) map[string]interface{} {
+func importJSON(data []byte) map[string]interface{} {
 
 	m := map[string]interface{}{}
 
