@@ -1,12 +1,10 @@
 #!/bin/bash
 
-template=test
-
 curl \
     -H "Content-Type: application/json" \
     -X POST http://127.0.0.1:8080/alert/ppcore \
     -d '@alert_example'
-#   -d '{"Name":"Alice","Body":"Hello","options":{"Time":1294706395881547000,"start":"opt","stop":"retry"}}'
+
 curl \
     -H "Content-Type: application/json" \
     -X POST http://127.0.0.1:8080/alert/rundeck \
